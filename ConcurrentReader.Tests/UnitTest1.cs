@@ -4,7 +4,7 @@ using System;
 namespace ConcurrentReader.Tests
 {
     [TestFixture]
-    public class UnitTest1
+    public class Loading_Tests
     {
         [Test]
         public void TestMethod1()

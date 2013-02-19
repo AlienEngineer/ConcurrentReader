@@ -3,6 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConcurrentReader", "ConcurrentReader\ConcurrentReader.csproj", "{E35BB3C7-7A52-49CE-851E-2381765B51BF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConcurrentReader.Tests", "ConcurrentReader.Tests\ConcurrentReader.Tests.csproj", "{D3D7212C-EDE4-4B12-ABA6-503F36532092}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{8716CD83-77F1-4C2C-A94F-2FBDBB08FD68}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +22,10 @@ Global
 		{E35BB3C7-7A52-49CE-851E-2381765B51BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E35BB3C7-7A52-49CE-851E-2381765B51BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E35BB3C7-7A52-49CE-851E-2381765B51BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3D7212C-EDE4-4B12-ABA6-503F36532092}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3D7212C-EDE4-4B12-ABA6-503F36532092}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3D7212C-EDE4-4B12-ABA6-503F36532092}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3D7212C-EDE4-4B12-ABA6-503F36532092}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
