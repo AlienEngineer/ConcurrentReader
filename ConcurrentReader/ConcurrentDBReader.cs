@@ -29,6 +29,15 @@ namespace ConcurrentReader
             loaderThread = new Thread(LoadingWork);
         }
 
+        private void NotifyOne()
+        {
+            Object lockObj;
+            while (!lockedThreads.TryDequeue(out lockObj)) ;
+            lock (lockObj)
+            {
+                Monitor.Pulse(lockObj);
+            }
+        }
         private void LoadingWork()
         {
             while (_Reader.Read())
@@ -43,13 +52,14 @@ namespace ConcurrentReader
 
                 if (lockedThreads.Count > 0)
                 {
-                    Object lockObj;
-                    lockedThreads.TryDequeue(out lockObj);
-                    lock (lockObj)
-                    {
-                        Monitor.Pulse(lockObj);
-                    }
+                    NotifyOne();
                 }
+            }
+            _Reader.Close();
+
+            while (lockedThreads.Count > 0)
+            {
+                NotifyOne();
             }
         }
 
@@ -86,15 +96,26 @@ namespace ConcurrentReader
                 loaderThread.Start();
             }
 
+            if (_Reader.IsClosed)
+            {
+                return false;
+            }
+
             // The reader has catched the loaderThread and must wait
-            // or the loaderThread has ended ans there's no more data to read
+            Thread.MemoryBarrier();
             if (data.Count == current)
             {
+
                 var lockObj = new Object();
                 lockedThreads.Enqueue(lockObj);
                 lock (lockObj)
                 {
-                    Monitor.Wait(lockObj);                    
+                    Monitor.Wait(lockObj);
+                    Thread.MemoryBarrier();
+                    if (data.Count == current)
+                    {
+                        return false;
+                    }
                 }
             }
 
@@ -223,7 +244,7 @@ namespace ConcurrentReader
         public int GetValues(object[] values)
         {
             throw new NotImplementedException();
-        } 
+        }
         #endregion
 
         public bool IsDBNull(int i)
@@ -233,7 +254,8 @@ namespace ConcurrentReader
 
         public object this[string name]
         {
-            get {
+            get
+            {
                 return threadAllocatedData[Thread.CurrentThread][name];
             }
         }
