@@ -20,7 +20,7 @@ namespace ConcurrentReader.Tests
 
                 var command = connection.CreateCommand();
                 command.CommandText = query;
-                return command.ExecuteReader();
+                return command.ExecuteReader(CommandBehavior.CloseConnection);
             }
         }
 

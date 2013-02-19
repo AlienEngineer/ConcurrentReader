@@ -16,8 +16,8 @@ namespace ConcurrentReader
         private Thread loaderThread;
         private readonly IDataReader _Reader;
 
-        private int current;
-        private int running;
+        private volatile int current;
+        private volatile int running;
 
         private readonly ConcurrentQueue<Object> lockedThreads = new ConcurrentQueue<Object>();
 
@@ -61,6 +61,13 @@ namespace ConcurrentReader
             {
                 NotifyOne();
             }
+
+            Thread.Sleep(100);
+
+            while (lockedThreads.Count > 0)
+            {
+                NotifyOne();
+            }
         }
 
         public void Close()
@@ -90,37 +97,44 @@ namespace ConcurrentReader
 
         public bool Read()
         {
-            Thread.MemoryBarrier();
             if (running != 1 && Interlocked.CompareExchange(ref running, 1, 0) == 0)
             {
                 loaderThread.Start();
             }
 
-            if (_Reader.IsClosed)
+            if (data.Count == current && _Reader.IsClosed && lockedThreads.Count == 0)
             {
                 return false;
             }
 
             // The reader has catched the loaderThread and must wait
-            Thread.MemoryBarrier();
             if (data.Count == current)
             {
 
                 var lockObj = new Object();
-                lockedThreads.Enqueue(lockObj);
                 lock (lockObj)
                 {
-                    Monitor.Wait(lockObj);
-                    Thread.MemoryBarrier();
-                    if (data.Count == current)
+                    lockedThreads.Enqueue(lockObj);
+                    if (!_Reader.IsClosed)
+                    {
+                        Monitor.Wait(lockObj);
+                    }
+
+                    if (data.Count == current && _Reader.IsClosed && lockedThreads.Count == 0)
                     {
                         return false;
                     }
+
+                    return Read();
                 }
             }
 
             var index = Interlocked.Increment(ref current);
-
+            Thread.MemoryBarrier();
+            if (index > data.Count && _Reader.IsClosed)
+            {
+                return false;
+            }
             threadAllocatedData[Thread.CurrentThread] = data[index - 1];
             return true;
         }

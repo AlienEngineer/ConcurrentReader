@@ -56,9 +56,9 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="Benchmark.cs" />
     <Compile Include="Connection.cs" />
-    <Compile Include="StopwatchExtensions.cs" />
-    <Compile Include="UnitTest1.cs" />
+    <Compile Include="Loading_Tests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

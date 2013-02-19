@@ -13,10 +13,12 @@ namespace ConcurrentReader.Tests
     public class Loading_Tests
     {
         Connection connection = new Connection();
+        const int RECORD_COUNT = 830;
+        const int RUSH_COUNT = 100;
 
         public IDataReader GetReader()
         {
-            return connection.ExecuteReader("Select * From Employees");
+            return connection.ExecuteReader("Select * From Orders");
         }
 
         public IDataReader GetConcurrentReader()
@@ -28,7 +30,7 @@ namespace ConcurrentReader.Tests
         {
             // Simulate work
             double result = 0.0;
-            for (int i = 0; i < 250000; i++)
+            for (int i = 0; i < 25000; i++)
             {
                 result += Math.Sqrt(i);
             }
@@ -36,36 +38,57 @@ namespace ConcurrentReader.Tests
         }
 
         [Test]
-        public void Simple_Loading_Test()
+        public void Sync_Simple_Loading_Test()
         {
             var count = 0;
-            var reader = GetConcurrentReader();
-                        
+            var reader = GetReader();
+
             while (reader.Read())
             {
                 SimulateWork();
                 ++count;
             }
 
-            Assert.AreEqual(9, count);
+            Assert.AreEqual(RECORD_COUNT, count);
         }
-        
+
+        [Test]
+        public void Timed_Sync_Simple_Loading_Test()
+        {
+            Benchmark.Run(Sync_Simple_Loading_Test, 1);
+        }
+
+        [Test]
+        public void Timed_Rush_Sync_Simple_Loading_Test()
+        {
+            Benchmark.Run(Sync_Simple_Loading_Test, RUSH_COUNT);
+        }
+
+        [Test]
+        public void Simple_Loading_Test()
+        {
+            var count = 0;
+            var reader = GetConcurrentReader();
+
+            while (reader.Read())
+            {
+                SimulateWork();
+                ++count;
+            }
+
+            Assert.AreEqual(RECORD_COUNT, count);
+        }
+
         [Test]
         public void Timed_Simple_Loading_Test()
         {
-            Console.WriteLine("Timed_Simple_Loading_Test - Elapsed Time : {0}", new Stopwatch().Run(Simple_Loading_Test).ElapsedTicks);
+            Benchmark.Run(Simple_Loading_Test, 1);
         }
 
         [Test]
         public void Timed_Rush_Simple_Loading_Test()
         {
-            long allTicks = 0;
-            for (int i = 0; i < 100; i++)
-            {
-                allTicks += new Stopwatch().Run(Simple_Loading_Test).ElapsedTicks;
-            }
-
-            Console.WriteLine("Timed_Rush_Simple_Loading_Test - Elapsed Time Mean : {0}", allTicks / 100.0);
+            Benchmark.Run(Simple_Loading_Test, RUSH_COUNT);
         }
 
         [Test]
@@ -73,34 +96,36 @@ namespace ConcurrentReader.Tests
         {
             var ts = new HashSet<Task>();
             var reader = GetConcurrentReader();
-
-            while (reader.Read())
+            var records = 0;
+            
+            for (int i = 0; i < Environment.ProcessorCount; i++)
             {
-                // Simulate async work
-                ts.Add(Task.Factory.StartNew(() => SimulateWork()));
+                ts.Add(Task.Factory.StartNew(() =>
+                {
+                    while (reader.Read())
+                    {
+                        SimulateWork();
+                        Interlocked.Increment(ref records);
+                    }
+                }));
             }
-
+            
             Task.WaitAll(ts.ToArray());
 
-            Assert.AreEqual(9, ts.Count);
+            Thread.MemoryBarrier();
+            Assert.AreEqual(RECORD_COUNT, records);
         }
 
         [Test]
         public void Timed_Concurrent_Loading_Test()
         {
-            Console.WriteLine("Timed_Concurrent_Loading_Test - Elapsed Time : {0}", new Stopwatch().Run(Concurrent_Loading_Test).ElapsedTicks);
+            Benchmark.Run(Concurrent_Loading_Test, 1);
         }
 
         [Test]
         public void Timed_Rush_Concurrent_Loading_Test()
         {
-            long allTicks = 0;
-            for (int i = 0; i < 100; i++)
-            {
-                allTicks += new Stopwatch().Run(Concurrent_Loading_Test).ElapsedTicks;
-            }
-
-            Console.WriteLine("Timed_Rush_Concurrent_Loading_Test - Elapsed Time Mean : {0}", allTicks / 100.0);
+            Benchmark.Run(Concurrent_Loading_Test, RUSH_COUNT);
         }
     }
 }
