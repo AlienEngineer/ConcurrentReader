@@ -14,6 +14,7 @@ namespace ConcurrentReader
         private readonly List<IDictionary<String, Object>> data = new List<IDictionary<String, Object>>();
 
         private Thread loaderThread;
+        private EventWaitHandle waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset);
         private readonly IDataReader _Reader;
 
         private int current;
@@ -44,9 +45,18 @@ namespace ConcurrentReader
             _Reader.Close();
         }
 
+        /// <summary>
+        /// Waits until the loading is complete.
+        /// </summary>
         public void Close()
         {
-            throw new NotImplementedException();
+            while (loaderThread.ThreadState == ThreadState.Unstarted)
+            {
+                Thread.Sleep(0);
+            }
+
+            loaderThread.Join();
+            waitHandle.WaitOne();
         }
 
         public int Depth
@@ -72,19 +82,18 @@ namespace ConcurrentReader
         public bool Read()
         {
             // If not running start the loader thread.
-            Thread.MemoryBarrier(); // Before reading...
-            if (running != 1 && Interlocked.CompareExchange(ref running, 1, 0) == 0)
+            if (Thread.VolatileRead(ref running) != 1 && Interlocked.CompareExchange(ref running, 1, 0) == 0)
             {
                 loaderThread.Start();
             }
 
             // wait while new data is being pushed.
-            Thread.MemoryBarrier(); // Before reading...
-            while (data.Count == current)
+            while (data.Count == Thread.VolatileRead(ref current))
             {
                 // If the reading is done while waiting then exit.
                 if (_Reader.IsClosed)
                 {
+                    waitHandle.Set();
                     return false;
                 }
                 Thread.Sleep(0);

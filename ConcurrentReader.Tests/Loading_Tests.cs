@@ -109,7 +109,9 @@ namespace ConcurrentReader.Tests
                     }
                 }));
             }
-            
+
+            reader.Close();
+
             Task.WaitAll(ts.ToArray());
 
             Thread.MemoryBarrier();
