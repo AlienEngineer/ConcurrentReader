@@ -68,7 +68,7 @@
 <span class="n">reader</span><span class="p">.</span><span class="n">ForEach</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span>
 <span class="p">{</span>
     <span class="c1">// Independent operation </span>
-    <span class="n">Compute</span><span class="p">(</span><span class="n">R</span><span class="p">);</span>
+    <span class="n">Compute</span><span class="p">(</span><span class="n">r</span><span class="p">);</span>
     <span class="c1">// Dependent operation therefore the </span>
     <span class="c1">// Interlocked.Increment to be synchronized.</span>
     <span class="n">Interlocked</span><span class="p">.</span><span class="n">Increment</span><span class="p">(</span><span class="k">ref</span> <span class="n">records</span><span class="p">);</span>
