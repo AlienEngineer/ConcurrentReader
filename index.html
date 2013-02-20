@@ -57,12 +57,12 @@
 <p>The reader can be used in concurrency with other threads any way you wish. Still there are a few extension methods to ease some pain.</p>
 
 <div class="highlight"><pre><span class="c1">// Returns some IDataReader implementation...</span>
-<span class="kt">var</span> <span class="n">reader</span> <span class="p">=</span> <span class="n">GetReader</span><span class="p">();</span>
+<span class="n">IDataReader</span> <span class="n">reader</span> <span class="p">=</span> <span class="n">GetReader</span><span class="p">();</span>
 <span class="c1">// Wraps the IDataReader with ConcurrentDBReader </span>
 <span class="c1">// making it Thread-Safe</span>
-<span class="kt">var</span> <span class="n">cReader</span> <span class="p">=</span> <span class="n">reader</span><span class="p">.</span><span class="n">MakeConcurrent</span><span class="p">();</span> 
+<span class="n">ConcurrentDBReader</span> <span class="n">cReader</span> <span class="p">=</span> <span class="n">reader</span><span class="p">.</span><span class="n">MakeConcurrent</span><span class="p">();</span> 
 
-<span class="kt">var</span> <span class="n">records</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">records</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
 
 <span class="c1">// The ForEach creates Tasks to execute asynchronously the work</span>
 <span class="n">reader</span><span class="p">.</span><span class="n">ForEach</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span>
@@ -77,7 +77,9 @@
 <span class="n">reader</span><span class="p">.</span><span class="n">ForEach</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span> 
 <span class="p">{</span>
     <span class="c1">// Gets the full line as a ITuple type.</span>
-    <span class="kt">var</span> <span class="n">tuple</span> <span class="p">=</span> <span class="n">r</span><span class="p">.</span><span class="n">GetData</span><span class="p">();</span>
+    <span class="n">ITuple</span> <span class="n">tuple</span> <span class="p">=</span> <span class="n">r</span><span class="p">.</span><span class="n">GetData</span><span class="p">();</span>
+    <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">"E-mail dated with {0} was sent..."</span><span class="p">,</span> 
+                      <span class="n">tuple</span><span class="p">.</span><span class="n">GetValue</span><span class="p">&lt;</span><span class="n">DateTime</span><span class="p">&gt;());</span>
     <span class="n">SendEMail</span><span class="p">(</span><span class="n">tuple</span><span class="p">);</span>
 <span class="p">});</span>
 </pre></div>
