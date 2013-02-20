@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Collections.Concurrent;
 
 namespace ConcurrentReader.Tests
 {
@@ -36,6 +37,8 @@ namespace ConcurrentReader.Tests
             }
             return result;
         }
+        
+        #region Simple Testing Area
 
         [Test]
         public void Sync_Simple_Loading_Test()
@@ -117,5 +120,37 @@ namespace ConcurrentReader.Tests
         {
             Benchmark.Run(Concurrent_Loading_Test, RUSH_COUNT);
         }
+        
+        #endregion
+
+        #region
+
+        [Test]
+        public void Process_Loaded_Data()
+        {
+            var reader = GetReader().MakeConcurrent();
+            
+            ConcurrentStack<IDictionary<String, Object>> values = new ConcurrentStack<IDictionary<String, Object>>();
+
+            var columns = new[] { "OrderId", "CustomerId", "EmployeeID" };
+
+            reader.ForEach(r =>
+            {
+                var row = new Dictionary<String, Object>();
+
+                foreach (var column in columns)
+                {
+                    row[column] = r[column];
+                }
+
+                values.Push(row);                
+            });
+
+            Assert.AreEqual(RECORD_COUNT, values.Count);
+
+        }
+
+        #endregion
+
     }
 }

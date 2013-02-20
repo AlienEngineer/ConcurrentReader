@@ -34,7 +34,7 @@ namespace ConcurrentReader
                 var row = new Dictionary<String, Object>();
                 for (int i = 0; i < _Reader.FieldCount; i++)
                 {
-                    row[_Reader.GetName(i)] = _Reader[i];
+                    row[_Reader.GetName(i).ToLower()] = _Reader[i];
                 }
 
                 data.Add(row);
@@ -243,7 +243,25 @@ namespace ConcurrentReader
         {
             get
             {
-                return threadAllocatedData[Thread.CurrentThread][name];
+                IDictionary<String, Object> data;
+                try
+                {
+                    data = threadAllocatedData[Thread.CurrentThread];
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    throw new KeyNotFoundException("No data found for the current thread.", ex);
+                }
+
+                try
+                {
+                    return data[name.ToLower()];
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    throw new KeyNotFoundException("The field " + name + " was not found.", ex);
+                }
+                
             }
         }
 
