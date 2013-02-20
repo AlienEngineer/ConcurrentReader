@@ -10,8 +10,7 @@ namespace ConcurrentReader
 {
     public class ConcurrentDBReader : IDataReader
     {
-
-        private readonly List<IDictionary<String, Object>> data = new List<IDictionary<String, Object>>();
+        private readonly List<ITuple> data = new List<ITuple>();
 
         private Thread loaderThread;
         private readonly IDataReader _Reader;
@@ -19,7 +18,7 @@ namespace ConcurrentReader
         private int current;
         private int running;
 
-        private readonly ConcurrentDictionary<Thread, IDictionary<String, Object>> threadAllocatedData = new ConcurrentDictionary<Thread, IDictionary<String, Object>>();
+        private readonly ConcurrentDictionary<Thread, ITuple> threadAllocatedData = new ConcurrentDictionary<Thread, ITuple>();
 
         public ConcurrentDBReader(IDataReader reader)
         {
@@ -37,7 +36,7 @@ namespace ConcurrentReader
                     row[_Reader.GetName(i).ToLower()] = _Reader[i];
                 }
 
-                data.Add(row);
+                data.Add(new Tuple(row));
 
             }
             _Reader.Close();
@@ -107,8 +106,8 @@ namespace ConcurrentReader
             }
 
             // Allocate data to the read calling thread.
-
-            threadAllocatedData[Thread.CurrentThread] = data[index];
+            // At times the allocatedData is set to null this makes sure that it is never null.
+            while ((threadAllocatedData[Thread.CurrentThread] = data[index]) == null) ;
             return true;
         }
 
@@ -243,7 +242,7 @@ namespace ConcurrentReader
         {
             get
             {
-                IDictionary<String, Object> data;
+                ITuple data;
                 try
                 {
                     data = threadAllocatedData[Thread.CurrentThread];
@@ -255,7 +254,7 @@ namespace ConcurrentReader
 
                 try
                 {
-                    return data[name.ToLower()];
+                    return data.GetValue(name);
                 }
                 catch (KeyNotFoundException ex)
                 {
@@ -267,7 +266,7 @@ namespace ConcurrentReader
 
         public object this[int i]
         {
-            get { return threadAllocatedData[Thread.CurrentThread].Values.ElementAt(i); }
+            get { throw new NotImplementedException(); }
         }
     }
 }

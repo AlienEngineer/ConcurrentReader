@@ -150,6 +150,12 @@ namespace ConcurrentReader.Tests
 
         }
 
+        [Test]
+        public void Timed_Process_Loaded_Data()
+        {
+            Benchmark.Run(Process_Loaded_Data, RUSH_COUNT);
+        }
+
         #endregion
 
     }
