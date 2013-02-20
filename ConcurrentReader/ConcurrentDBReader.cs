@@ -14,7 +14,6 @@ namespace ConcurrentReader
         private readonly List<IDictionary<String, Object>> data = new List<IDictionary<String, Object>>();
 
         private Thread loaderThread;
-        private EventWaitHandle waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset);
         private readonly IDataReader _Reader;
 
         private int current;
@@ -27,7 +26,6 @@ namespace ConcurrentReader
             _Reader = reader;
             loaderThread = new Thread(LoadingWork);
         }
-
 
         private void LoadingWork()
         {
@@ -56,7 +54,6 @@ namespace ConcurrentReader
             }
 
             loaderThread.Join();
-            waitHandle.WaitOne();
         }
 
         public int Depth
@@ -93,7 +90,6 @@ namespace ConcurrentReader
                 // If the reading is done while waiting then exit.
                 if (_Reader.IsClosed)
                 {
-                    waitHandle.Set();
                     return false;
                 }
                 Thread.Sleep(0);

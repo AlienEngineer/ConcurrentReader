@@ -94,28 +94,16 @@ namespace ConcurrentReader.Tests
         [Test]
         public void Concurrent_Loading_Test()
         {
-            var ts = new HashSet<Task>();
-            var reader = GetConcurrentReader();
+            var reader = GetReader().MakeConcurrent();
             var records = 0;
-            
-            for (int i = 0; i < Environment.ProcessorCount; i++)
+
+            reader.ForEach(r =>
             {
-                ts.Add(Task.Factory.StartNew(() =>
-                {
-                    while (reader.Read())
-                    {
-                        SimulateWork();
-                        Interlocked.Increment(ref records);
-                    }
-                }));
-            }
+                SimulateWork();
+                Interlocked.Increment(ref records);
+            });
 
-            reader.Close();
-
-            Task.WaitAll(ts.ToArray());
-
-            Thread.MemoryBarrier();
-            Assert.AreEqual(RECORD_COUNT, records);
+            Assert.AreEqual(RECORD_COUNT, Thread.VolatileRead(ref records));
         }
 
         [Test]
