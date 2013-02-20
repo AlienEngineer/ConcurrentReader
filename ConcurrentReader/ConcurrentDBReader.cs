@@ -38,6 +38,7 @@ namespace ConcurrentReader
                 Monitor.Pulse(lockObj);
             }
         }
+
         private void LoadingWork()
         {
             while (_Reader.Read())
@@ -50,24 +51,8 @@ namespace ConcurrentReader
 
                 data.Add(row);
 
-                if (lockedThreads.Count > 0)
-                {
-                    NotifyOne();
-                }
             }
             _Reader.Close();
-
-            while (lockedThreads.Count > 0)
-            {
-                NotifyOne();
-            }
-
-            Thread.Sleep(100);
-
-            while (lockedThreads.Count > 0)
-            {
-                NotifyOne();
-            }
         }
 
         public void Close()
@@ -97,45 +82,37 @@ namespace ConcurrentReader
 
         public bool Read()
         {
+            // If not running start the loader thread.
             if (running != 1 && Interlocked.CompareExchange(ref running, 1, 0) == 0)
             {
                 loaderThread.Start();
             }
 
-            if (data.Count == current && _Reader.IsClosed && lockedThreads.Count == 0)
+            // wait while new data is being pushed.
+            while (data.Count == current)
             {
-                return false;
-            }
-
-            // The reader has catched the loaderThread and must wait
-            if (data.Count == current)
-            {
-
-                var lockObj = new Object();
-                lock (lockObj)
+                // If the reading is done while waiting then exit.
+                if (_Reader.IsClosed)
                 {
-                    lockedThreads.Enqueue(lockObj);
-                    if (!_Reader.IsClosed)
-                    {
-                        Monitor.Wait(lockObj);
-                    }
-
-                    if (data.Count == current && _Reader.IsClosed && lockedThreads.Count == 0)
-                    {
-                        return false;
-                    }
-
-                    return Read();
+                    return false;
                 }
+                Thread.Sleep(0);
             }
 
-            var index = Interlocked.Increment(ref current);
-            Thread.MemoryBarrier();
-            if (index > data.Count && _Reader.IsClosed)
+            // moving the cursor to the next position.
+            var index = Interlocked.Increment(ref current) - 1;
+
+            // If more than one thread increments the cursor then it could turn into an invalid index.
+            // If the index is not valid than undo the cursor increment.
+            if (index >= data.Count)
             {
-                return false;
+                Interlocked.Decrement(ref current);
+                return Read();
             }
-            threadAllocatedData[Thread.CurrentThread] = data[index - 1];
+
+            // Allocate data to the read calling thread.
+
+            threadAllocatedData[Thread.CurrentThread] = data[index];
             return true;
         }
 
