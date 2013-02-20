@@ -16,10 +16,8 @@ namespace ConcurrentReader
         private Thread loaderThread;
         private readonly IDataReader _Reader;
 
-        private volatile int current;
-        private volatile int running;
-
-        private readonly ConcurrentQueue<Object> lockedThreads = new ConcurrentQueue<Object>();
+        private int current;
+        private int running;
 
         private readonly ConcurrentDictionary<Thread, IDictionary<String, Object>> threadAllocatedData = new ConcurrentDictionary<Thread, IDictionary<String, Object>>();
 
@@ -29,15 +27,6 @@ namespace ConcurrentReader
             loaderThread = new Thread(LoadingWork);
         }
 
-        private void NotifyOne()
-        {
-            Object lockObj;
-            while (!lockedThreads.TryDequeue(out lockObj)) ;
-            lock (lockObj)
-            {
-                Monitor.Pulse(lockObj);
-            }
-        }
 
         private void LoadingWork()
         {
@@ -83,12 +72,14 @@ namespace ConcurrentReader
         public bool Read()
         {
             // If not running start the loader thread.
+            Thread.MemoryBarrier(); // Before reading...
             if (running != 1 && Interlocked.CompareExchange(ref running, 1, 0) == 0)
             {
                 loaderThread.Start();
             }
 
             // wait while new data is being pushed.
+            Thread.MemoryBarrier(); // Before reading...
             while (data.Count == current)
             {
                 // If the reading is done while waiting then exit.
@@ -99,7 +90,7 @@ namespace ConcurrentReader
                 Thread.Sleep(0);
             }
 
-            // moving the cursor to the next position.
+            // moving the cursor to the next position.            
             var index = Interlocked.Increment(ref current) - 1;
 
             // If more than one thread increments the cursor then it could turn into an invalid index.
