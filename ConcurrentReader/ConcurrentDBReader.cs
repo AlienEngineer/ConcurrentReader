@@ -152,6 +152,18 @@ namespace ConcurrentReader
             throw new NotImplementedException();
         }
 
+        public ITuple GetData()
+        {
+            try
+            {
+                return threadAllocatedData[Thread.CurrentThread];
+            }
+            catch (KeyNotFoundException ex)
+            {
+                throw new KeyNotFoundException("No data found for the current thread.", ex);
+            }
+        }
+
         public IDataReader GetData(int i)
         {
             throw new NotImplementedException();
@@ -242,19 +254,9 @@ namespace ConcurrentReader
         {
             get
             {
-                ITuple data;
                 try
                 {
-                    data = threadAllocatedData[Thread.CurrentThread];
-                }
-                catch (KeyNotFoundException ex)
-                {
-                    throw new KeyNotFoundException("No data found for the current thread.", ex);
-                }
-
-                try
-                {
-                    return data.GetValue(name);
+                    return GetData().GetValue(name);
                 }
                 catch (KeyNotFoundException ex)
                 {
