@@ -105,7 +105,7 @@
 
 <div class="highlight"><pre><span class="c1">// The reader will stop reading records from the </span>
 <span class="c1">// IDataReader when the predicate is true.</span>
-<span class="n">GetReader</span><span class="p">().</span><span class="n">MakeConcurrent</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span> <span class="n">r</span><span class="p">[</span><span class="s">"RecordId"</span><span class="p">]</span> <span class="p">&lt;</span> <span class="m">10</span><span class="p">).</span><span class="n">ForEach</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span>
+<span class="n">GetReader</span><span class="p">().</span><span class="n">MakeConcurrent</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span> <span class="n">r</span><span class="p">.</span><span class="n">GetInt32</span><span class="p">(</span><span class="m">0</span><span class="p">)</span> <span class="p">&lt;</span> <span class="m">10</span><span class="p">).</span><span class="n">ForEach</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span>
 <span class="p">{</span>
     <span class="n">Compute</span><span class="p">(</span><span class="n">r</span><span class="p">);</span>
 <span class="p">});</span>
