@@ -75,9 +75,10 @@
 <span class="p">});</span>
 </pre></div>
 
+<p>To make thing a bit more easy it is possible to get a full line as a ITuple type.</p>
+
 <div class="highlight"><pre><span class="n">reader</span><span class="p">.</span><span class="n">ForEach</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span> 
 <span class="p">{</span>
-    <span class="c1">// Gets the full line as a ITuple type.</span>
     <span class="n">ITuple</span> <span class="n">tuple</span> <span class="p">=</span> <span class="n">r</span><span class="p">.</span><span class="n">GetData</span><span class="p">();</span>
     <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">"E-mail dated with {0} was sent..."</span><span class="p">,</span> 
                       <span class="n">tuple</span><span class="p">.</span><span class="n">GetValue</span><span class="p">&lt;</span><span class="n">DateTime</span><span class="p">&gt;());</span>
@@ -85,11 +86,13 @@
 <span class="p">});</span>
 </pre></div>
 
+<p>Still the regular use has the advantage of the reading lock getting released as soon as the data is loaded and not when all the computations are done.</p>
+
 <div class="highlight"><pre><span class="k">try</span>
 <span class="p">{</span>
     <span class="k">while</span><span class="p">(</span><span class="n">reader</span><span class="p">.</span><span class="n">Read</span><span class="p">())</span>
     <span class="p">{</span>
-        <span class="n">AsynchronousCompute</span><span class="p">(</span><span class="n">r</span><span class="p">);</span>
+        <span class="n">Compute</span><span class="p">(</span><span class="n">r</span><span class="p">);</span>
     <span class="p">}</span>
 <span class="p">}</span>
 <span class="k">finally</span> 
