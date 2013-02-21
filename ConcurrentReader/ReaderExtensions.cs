@@ -15,7 +15,7 @@ namespace ConcurrentReader
         /// </summary>
         /// <param name="reader">The reader.</param>
         /// <returns></returns>
-        public static ConcurrentDBReader MakeConcurrent(this IDataReader reader, Predicate<IDataReader> readWhile)
+        public static ConcurrentDBReader MakeConcurrent(this IDataReader reader, Predicate<IDataReader> readWhile = null)
         {
             return new ConcurrentDBReader(reader, readWhile);
         }

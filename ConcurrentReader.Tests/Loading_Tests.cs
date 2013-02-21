@@ -95,6 +95,21 @@ namespace ConcurrentReader.Tests
         }
 
         [Test]
+        public void Concurrent_Loading_Test_With_Predicate()
+        {
+            var reader = GetReader().MakeConcurrent(r => r.GetInt32(0) < 10500);
+            var records = 0;
+
+            reader.ForEach(r =>
+            {
+                SimulateWork();
+                Interlocked.Increment(ref records);
+            });
+
+            Assert.AreEqual(252, Thread.VolatileRead(ref records));
+        }
+
+        [Test]
         public void Concurrent_Loading_Test()
         {
             var reader = GetReader().MakeConcurrent();
