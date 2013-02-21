@@ -11,7 +11,6 @@ namespace ConcurrentReader
     public class ConcurrentDBReader : IDataReader
     {
         private readonly List<ITuple> data = new List<ITuple>();
-
         private Thread loaderThread;
         private readonly IDataReader _Reader;
 
@@ -20,16 +19,29 @@ namespace ConcurrentReader
 
         private readonly ConcurrentDictionary<Thread, ITuple> threadAllocatedData = new ConcurrentDictionary<Thread, ITuple>();
 
-        public ConcurrentDBReader(IDataReader reader)
+        public ConcurrentDBReader(IDataReader reader, Predicate<IDataReader> readWhile = null)
         {
             _Reader = reader;
-            loaderThread = new Thread(LoadingWork);
+            loaderThread = new Thread(() => LoadingWork(readWhile));
+
+            
+            
         }
 
-        private void LoadingWork()
+        private void LoadingWork(Predicate<IDataReader> readWhile = null)
         {
+            if (readWhile == null)
+            {
+                readWhile = r => true;
+            }
+
             while (_Reader.Read())
             {
+                if (!readWhile(_Reader))
+                {
+                    break;
+                }
+
                 var row = new Dictionary<String, Object>();
                 for (int i = 0; i < _Reader.FieldCount; i++)
                 {
@@ -110,7 +122,7 @@ namespace ConcurrentReader
             while ((threadAllocatedData[Thread.CurrentThread] = data[index]) == null) ;
             return true;
         }
-
+                
         public int RecordsAffected
         {
             get { throw new NotImplementedException(); }
