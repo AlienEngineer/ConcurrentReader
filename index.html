@@ -73,8 +73,9 @@
     <span class="c1">// Interlocked.Increment to be synchronized.</span>
     <span class="n">Interlocked</span><span class="p">.</span><span class="n">Increment</span><span class="p">(</span><span class="k">ref</span> <span class="n">records</span><span class="p">);</span>
 <span class="p">});</span>
+</pre></div>
 
-<span class="n">reader</span><span class="p">.</span><span class="n">ForEach</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span> 
+<div class="highlight"><pre><span class="n">reader</span><span class="p">.</span><span class="n">ForEach</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span> 
 <span class="p">{</span>
     <span class="c1">// Gets the full line as a ITuple type.</span>
     <span class="n">ITuple</span> <span class="n">tuple</span> <span class="p">=</span> <span class="n">r</span><span class="p">.</span><span class="n">GetData</span><span class="p">();</span>
@@ -82,6 +83,19 @@
                       <span class="n">tuple</span><span class="p">.</span><span class="n">GetValue</span><span class="p">&lt;</span><span class="n">DateTime</span><span class="p">&gt;());</span>
     <span class="n">SendEMail</span><span class="p">(</span><span class="n">tuple</span><span class="p">);</span>
 <span class="p">});</span>
+</pre></div>
+
+<div class="highlight"><pre><span class="k">try</span>
+<span class="p">{</span>
+    <span class="k">while</span><span class="p">(</span><span class="n">reader</span><span class="p">.</span><span class="n">Read</span><span class="p">())</span>
+    <span class="p">{</span>
+        <span class="n">AsynchronousCompute</span><span class="p">(</span><span class="n">r</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="k">finally</span> 
+<span class="p">{</span>
+    <span class="n">reader</span><span class="p">.</span><span class="n">Close</span><span class="p">();</span>
+<span class="p">}</span>
 </pre></div>
       </section>
       <footer>
