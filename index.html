@@ -65,7 +65,7 @@
 <span class="kt">int</span> <span class="n">records</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
 
 <span class="c1">// The ForEach creates Tasks to execute asynchronously the work</span>
-<span class="n">reader</span><span class="p">.</span><span class="n">ForEach</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span>
+<span class="n">cReader</span><span class="p">.</span><span class="n">ForEach</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span>
 <span class="p">{</span>
     <span class="c1">// Independent operation </span>
     <span class="n">Compute</span><span class="p">(</span><span class="n">r</span><span class="p">);</span>
@@ -77,7 +77,7 @@
 
 <p>To make thing a bit more easy it is possible to get a full line as a ITuple type.</p>
 
-<div class="highlight"><pre><span class="n">reader</span><span class="p">.</span><span class="n">ForEach</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span> 
+<div class="highlight"><pre><span class="n">cReader</span><span class="p">.</span><span class="n">ForEach</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span> 
 <span class="p">{</span>
     <span class="n">ITuple</span> <span class="n">tuple</span> <span class="p">=</span> <span class="n">r</span><span class="p">.</span><span class="n">GetData</span><span class="p">();</span>
     <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">"E-mail dated with {0} was sent..."</span><span class="p">,</span> 
@@ -90,7 +90,7 @@
 
 <div class="highlight"><pre><span class="k">try</span>
 <span class="p">{</span>
-    <span class="k">while</span><span class="p">(</span><span class="n">reader</span><span class="p">.</span><span class="n">Read</span><span class="p">())</span>
+    <span class="k">while</span><span class="p">(</span><span class="n">cReader</span><span class="p">.</span><span class="n">Read</span><span class="p">())</span>
     <span class="p">{</span>
         <span class="n">Compute</span><span class="p">(</span><span class="n">r</span><span class="p">);</span>
     <span class="p">}</span>
@@ -99,6 +99,16 @@
 <span class="p">{</span>
     <span class="n">reader</span><span class="p">.</span><span class="n">Close</span><span class="p">();</span>
 <span class="p">}</span>
+</pre></div>
+
+<p>Sometimes we need to stop the reading process when a given condition occurs so when can achieve this like so.</p>
+
+<div class="highlight"><pre><span class="c1">// The reader will stop reading records from the </span>
+<span class="c1">// IDataReader when the predicate is true.</span>
+<span class="n">GetReader</span><span class="p">().</span><span class="n">MakeConcurrent</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span> <span class="n">r</span><span class="p">[</span><span class="s">"RecordId"</span><span class="p">]</span> <span class="p">&lt;</span> <span class="m">10</span><span class="p">).</span><span class="n">ForEach</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="n">Compute</span><span class="p">(</span><span class="n">r</span><span class="p">);</span>
+<span class="p">});</span>
 </pre></div>
       </section>
       <footer>
