@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
-using System.Data.Common;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
 
 namespace ConcurrentReader.Tests
 {
@@ -14,7 +10,14 @@ namespace ConcurrentReader.Tests
 
         public IDataReader ExecuteReader(String query)
         {
-            var connection = new SqlConnection(ConfigurationManager.ConnectionStrings[Environment.MachineName].ConnectionString);
+            var settings = ConfigurationManager.ConnectionStrings[Environment.MachineName];
+
+            if (settings == null)
+            {
+                throw new ConfigurationErrorsException("No settings were found for this machine [" + Environment.MachineName + "].");
+            }
+
+            var connection = new SqlConnection(settings.ConnectionString);
             {
                 connection.Open();
 

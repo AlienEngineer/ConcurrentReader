@@ -2,8 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
 using System.Threading;
 
 namespace ConcurrentReader
@@ -11,7 +9,7 @@ namespace ConcurrentReader
     public class ConcurrentDBReader : IDataReader
     {
         private readonly List<ITuple> data = new List<ITuple>();
-        private Thread loaderThread;
+        private readonly Thread loaderThread;
         private readonly IDataReader _Reader;
 
         private int current;
@@ -24,8 +22,8 @@ namespace ConcurrentReader
             _Reader = reader;
             loaderThread = new Thread(() => LoadingWork(readWhile));
 
-            
-            
+            FieldCount = _Reader.FieldCount;
+            Depth = _Reader.Depth;
         }
 
         private void LoadingWork(Predicate<IDataReader> readWhile = null)
@@ -67,10 +65,7 @@ namespace ConcurrentReader
             loaderThread.Join();
         }
 
-        public int Depth
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public int Depth { get; private set; }
 
         public DataTable GetSchemaTable()
         {
@@ -119,10 +114,10 @@ namespace ConcurrentReader
 
             // Allocate data to the read calling thread.
             // At times the allocatedData is set to null this makes sure that it is never null.
-            while ((threadAllocatedData[Thread.CurrentThread] = data[index]) == null) ;
+            while ((threadAllocatedData[Thread.CurrentThread] = data[index]) == null) { }
             return true;
         }
-                
+
         public int RecordsAffected
         {
             get { throw new NotImplementedException(); }
@@ -130,23 +125,23 @@ namespace ConcurrentReader
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            if (_Reader == null) return;
+
+            _Reader.Close();
+            _Reader.Dispose();
         }
 
-        public int FieldCount
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public int FieldCount { get; private set; }
 
         #region GETTERS
         public bool GetBoolean(int i)
         {
-            throw new NotImplementedException();
+            return GetData().GetValue<bool>(i);
         }
 
         public byte GetByte(int i)
         {
-            throw new NotImplementedException();
+            return GetData().GetValue<byte>(i);
         }
 
         public long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
@@ -156,7 +151,7 @@ namespace ConcurrentReader
 
         public char GetChar(int i)
         {
-            throw new NotImplementedException();
+            return GetData().GetValue<char>(i);
         }
 
         public long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length)
@@ -183,78 +178,85 @@ namespace ConcurrentReader
 
         public string GetDataTypeName(int i)
         {
-            throw new NotImplementedException();
+            return GetData().GetValue<string>(i);
         }
 
         public DateTime GetDateTime(int i)
         {
-            throw new NotImplementedException();
+            return GetData().GetValue<DateTime>(i);
         }
 
         public decimal GetDecimal(int i)
         {
-            throw new NotImplementedException();
+            return GetData().GetValue<decimal>(i);
         }
 
         public double GetDouble(int i)
         {
-            throw new NotImplementedException();
+            return GetData().GetValue<double>(i);
         }
 
         public Type GetFieldType(int i)
         {
-            throw new NotImplementedException();
+            return GetData().GetValue(i).GetType();
         }
 
         public float GetFloat(int i)
         {
-            throw new NotImplementedException();
+            return GetData().GetValue<float>(i);
         }
 
         public Guid GetGuid(int i)
         {
-            throw new NotImplementedException();
+            return GetData().GetValue<Guid>(i);
         }
 
         public short GetInt16(int i)
         {
-            throw new NotImplementedException();
+            return GetData().GetValue<Int16>(i);
         }
 
         public int GetInt32(int i)
         {
-            throw new NotImplementedException();
+            return GetData().GetValue<int>(i);
         }
 
         public long GetInt64(int i)
         {
-            throw new NotImplementedException();
+            return GetData().GetValue<long>(i);
         }
 
         public string GetName(int i)
         {
-            throw new NotImplementedException();
+            return GetData().GetName(i);
         }
 
         public int GetOrdinal(string name)
         {
-            throw new NotImplementedException();
+            return GetData().GetValue<int>(name);
         }
 
         public string GetString(int i)
         {
-            throw new NotImplementedException();
+            return GetData().GetValue<String>(i);
         }
 
         public object GetValue(int i)
         {
-            throw new NotImplementedException();
+            return this[i];
         }
 
         public int GetValues(object[] values)
         {
-            throw new NotImplementedException();
+            var tuple = GetData();
+            var objects = tuple.GetValues();
+            for (int i = 0; i < values.Length; i++)
+            {
+                values[i] = objects[i];
+            }
+            return objects.Length;
         }
+
         #endregion
 
         public bool IsDBNull(int i)
@@ -274,13 +276,15 @@ namespace ConcurrentReader
                 {
                     throw new KeyNotFoundException("The field " + name + " was not found.", ex);
                 }
-                
             }
         }
 
         public object this[int i]
         {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                return GetData().GetValue(i);
+            }
         }
     }
 }

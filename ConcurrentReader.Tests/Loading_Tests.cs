@@ -2,10 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Linq;
 using System.Collections.Concurrent;
 
 namespace ConcurrentReader.Tests
@@ -13,9 +10,9 @@ namespace ConcurrentReader.Tests
     [TestFixture]
     public class Loading_Tests
     {
-        Connection connection = new Connection();
+        readonly Connection connection = new Connection();
         const int RECORD_COUNT = 830;
-        const int RUSH_COUNT = 100;
+        const int RUSH_COUNT = 50;
 
         public IDataReader GetReader()
         {
@@ -31,7 +28,7 @@ namespace ConcurrentReader.Tests
         {
             // Simulate work
             double result = 0.0;
-            for (int i = 0; i < 25000; i++)
+            for (int i = 0; i < 2500; i++)
             {
                 result += Math.Sqrt(i);
             }
@@ -45,13 +42,12 @@ namespace ConcurrentReader.Tests
         {
             var count = 0;
             var reader = GetReader();
-
+            
             while (reader.Read())
             {
                 SimulateWork();
                 ++count;
             }
-
             Assert.AreEqual(RECORD_COUNT, count);
         }
 
@@ -98,30 +94,30 @@ namespace ConcurrentReader.Tests
         public void Concurrent_Loading_Test_With_Predicate()
         {
             var reader = GetReader().MakeConcurrent(r => r.GetInt32(0) < 10500);
-            var records = 0;
+            int[] records = {0};
 
             reader.ForEach(r =>
             {
                 SimulateWork();
-                Interlocked.Increment(ref records);
+                Interlocked.Increment(ref records[0]);
             });
 
-            Assert.AreEqual(252, Thread.VolatileRead(ref records));
+            Assert.AreEqual(252, Thread.VolatileRead(ref records[0]));
         }
 
         [Test]
         public void Concurrent_Loading_Test()
         {
             var reader = GetReader().MakeConcurrent();
-            var records = 0;
+            int[] records = {0};
 
             reader.ForEach(r =>
             {
                 SimulateWork();
-                Interlocked.Increment(ref records);
+                Interlocked.Increment(ref records[0]);
             });
 
-            Assert.AreEqual(RECORD_COUNT, Thread.VolatileRead(ref records));
+            Assert.AreEqual(RECORD_COUNT, Thread.VolatileRead(ref records[0]));
         }
 
         [Test]
@@ -145,7 +141,7 @@ namespace ConcurrentReader.Tests
         {
             var reader = GetReader().MakeConcurrent();
             
-            ConcurrentStack<IDictionary<String, Object>> values = new ConcurrentStack<IDictionary<String, Object>>();
+            var values = new ConcurrentStack<IDictionary<String, Object>>();
 
             var columns = new[] { "OrderId", "CustomerId", "EmployeeID" };
 
