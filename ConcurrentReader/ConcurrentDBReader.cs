@@ -6,7 +6,16 @@ using System.Threading;
 
 namespace ConcurrentReader
 {
-    public class ConcurrentDBReader : IDataReader
+
+    public interface IConcurrentDataReader : IDataReader
+    {
+        ITuple GetData();
+    }
+
+    /// <summary> 
+    /// Implementation of the IConcurrentDataReader
+    /// </summary>
+    public class ConcurrentDBReader : IConcurrentDataReader
     {
         private readonly List<ITuple> data = new List<ITuple>();
         private readonly Thread loaderThread;
