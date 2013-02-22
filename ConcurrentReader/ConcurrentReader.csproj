@@ -39,7 +39,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConcurrentDataReaderBase.cs" />
     <Compile Include="ConcurrentDBReader.cs" />
+    <Compile Include="IConcurrentDataReader.cs" />
     <Compile Include="ReaderExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tuple.cs" />
