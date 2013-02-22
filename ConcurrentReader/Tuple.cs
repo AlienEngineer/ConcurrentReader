@@ -61,17 +61,20 @@ namespace ConcurrentReader
         /// <param name="index">The index.</param>
         /// <returns></returns>
         String GetName(int index);
+
+        IConcurrentDataReader Reader { get; }
     }
 
     public class Tuple : ITuple
     {
         private readonly IDictionary<String, Object> data;
         private IList<Object> dataList;
-        private IList<String> keyList; 
+        private IList<String> keyList;
 
-        public Tuple(IDictionary<String, Object> data)
+        public Tuple(IDictionary<String, Object> data, IConcurrentDataReader reader)
         {
             this.data = data;
+            Reader = reader;
         }
 
         public IEnumerable<String> Columns { get { return data.Keys; } }
@@ -118,5 +121,7 @@ namespace ConcurrentReader
             }
             return keyList[index];
         }
+
+        public IConcurrentDataReader Reader { get; private set; }
     }
 }

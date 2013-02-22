@@ -46,7 +46,7 @@ namespace ConcurrentReader
                     row[_Reader.GetName(i).ToLower()] = _Reader[i];
                 }
 
-                data.Add(new Tuple(row));
+                data.Add(new Tuple(row, this));
 
             }
             _Reader.Close();
