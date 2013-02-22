@@ -59,7 +59,7 @@
 <div class="highlight"><pre><span class="c1">// Returns some IDataReader implementation...</span>
 <span class="n">IDataReader</span> <span class="n">reader</span> <span class="p">=</span> <span class="n">GetReader</span><span class="p">();</span>
 <span class="c1">// Wraps the IDataReader making it Thread-Safe</span>
-<span class="n">IConcurrentDataReader</span> <span class="n">cReader</span> <span class="p">=</span> <span class="n">reader</span><span class="p">.</span><span class="n">MakeConcurrent</span><span class="p">();</span> 
+<span class="n">IConcurrentDataReader</span> <span class="n">cReader</span> <span class="p">=</span> <span class="n">reader</span><span class="p">.</span><span class="n">AsParallel</span><span class="p">();</span> 
 
 <span class="kt">int</span> <span class="n">records</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
 
@@ -106,7 +106,7 @@
 
 <div class="highlight"><pre><span class="c1">// The reader will stop reading records from the </span>
 <span class="c1">// IDataReader when the predicate is true.</span>
-<span class="n">GetReader</span><span class="p">().</span><span class="n">MakeConcurrent</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span> <span class="n">r</span><span class="p">.</span><span class="n">GetInt32</span><span class="p">(</span><span class="m">0</span><span class="p">)</span> <span class="p">&lt;</span> <span class="m">10</span><span class="p">).</span><span class="n">ForEach</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span>
+<span class="n">GetReader</span><span class="p">().</span><span class="n">AsParallel</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span> <span class="n">r</span><span class="p">.</span><span class="n">GetInt32</span><span class="p">(</span><span class="m">0</span><span class="p">)</span> <span class="p">&lt;</span> <span class="m">10</span><span class="p">).</span><span class="n">ForEach</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span>
 <span class="p">{</span>
     <span class="n">Compute</span><span class="p">(</span><span class="n">r</span><span class="p">);</span>
 <span class="p">});</span>
@@ -121,7 +121,7 @@
 <p>The second method is the Load extension method that forces the reader to fetch the data to memory and then returns the current reader so the GetTuples method can be called. Remember that this method does not run any action in parallel it just reads as quick as possible the data from the reader and turns that into tuples releasing the reader.</p>
 
 <div class="highlight"><pre><span class="c1">// Mapping / transform operation</span>
-<span class="kt">var</span> <span class="n">orders</span> <span class="p">=</span> <span class="n">GetReader</span><span class="p">().</span><span class="n">MakeConcurrent</span><span class="p">().</span><span class="n">ForEach</span><span class="p">&lt;</span><span class="n">Order</span><span class="p">&gt;(</span><span class="n">t</span> <span class="p">=&gt;</span>
+<span class="kt">var</span> <span class="n">orders</span> <span class="p">=</span> <span class="n">GetReader</span><span class="p">().</span><span class="n">AsParallel</span><span class="p">().</span><span class="n">ForEach</span><span class="p">&lt;</span><span class="n">Order</span><span class="p">&gt;(</span><span class="n">t</span> <span class="p">=&gt;</span>
 <span class="p">{</span>
     <span class="k">return</span> <span class="k">new</span> <span class="n">Order</span>
     <span class="p">{</span>
@@ -130,7 +130,7 @@
 <span class="p">});</span>
 
 <span class="c1">// Get ordered tuples</span>
-<span class="n">GetReader</span><span class="p">().</span><span class="n">MakeConcurrent</span><span class="p">().</span><span class="n">Load</span><span class="p">().</span><span class="n">GetTuples</span><span class="p">();</span>
+<span class="n">GetReader</span><span class="p">().</span><span class="n">AsParallel</span><span class="p">().</span><span class="n">Load</span><span class="p">().</span><span class="n">GetTuples</span><span class="p">();</span>
 </pre></div>
       </section>
       <footer>
