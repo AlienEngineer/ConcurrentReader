@@ -19,7 +19,7 @@ namespace ConcurrentReader
         /// <returns></returns>
         public static IConcurrentDataReader AsParallel(this IDataReader reader, Predicate<IDataReader> readWhile = null)
         {
-            return new ConcurrentDBReader(reader, readWhile);
+            return new ConcurrentDataReader(reader, readWhile);
         }
 
         #region IDATAREADER EXTENSIONS

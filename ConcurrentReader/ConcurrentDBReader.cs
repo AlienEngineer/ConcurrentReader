@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace ConcurrentReader
 {
-    public class ConcurrentDBReader : ConcurrentDataReaderBase
+    public class ConcurrentDataReader : ConcurrentDataReaderBase
     {
         private readonly List<ITuple> data = new List<ITuple>();
         private readonly Thread loaderThread;
@@ -17,7 +17,7 @@ namespace ConcurrentReader
         
         private readonly ConcurrentDictionary<Thread, ITuple> threadAllocatedData = new ConcurrentDictionary<Thread, ITuple>();
 
-        public ConcurrentDBReader(IDataReader reader, Predicate<IDataReader> readWhile = null)
+        public ConcurrentDataReader(IDataReader reader, Predicate<IDataReader> readWhile = null)
         {
             _Reader = reader;
             loaderThread = new Thread(() => LoadingWork(readWhile));
