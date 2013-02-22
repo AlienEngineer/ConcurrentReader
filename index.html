@@ -48,7 +48,7 @@
 <p>The call to the IDataReader Read() Method starts a loaderThread that loads all records into a List.
 <img src="https://raw.github.com/AlienEngineer/ConcurrentReader/master/Doc/b8b4b6f3.png" alt="Flow"></p>
 
-<p>From this point on the Read() Method is used to allocate data from the List to the Current Thread. When the current thread tries to read that it will actually get data from a Tuple type.</p>
+<p>From this point on the Read() Method is used to allocate data from the List to the Current Thread. When the current thread calls the read method it will actually get data as a ITuple type. The read will hold until there is some data in the buffer.</p>
 
 <p>This solution enables the reading process to be as quick as possible making sure the database is released as soon as the data is loaded. Not having to wait for the data computation.</p>
 
