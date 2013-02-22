@@ -72,6 +72,17 @@
     <span class="c1">// Interlocked.Increment to be synchronized.</span>
     <span class="n">Interlocked</span><span class="p">.</span><span class="n">Increment</span><span class="p">(</span><span class="k">ref</span> <span class="n">records</span><span class="p">);</span>
 <span class="p">});</span>
+
+<span class="c1">// or...</span>
+<span class="n">reader</span><span class="p">.</span><span class="n">ParallelForEach</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="c1">// Independent operation </span>
+    <span class="n">Compute</span><span class="p">(</span><span class="n">r</span><span class="p">);</span>
+    <span class="c1">// Dependent operation therefore the </span>
+    <span class="c1">// Interlocked.Increment to be synchronized.</span>
+    <span class="n">Interlocked</span><span class="p">.</span><span class="n">Increment</span><span class="p">(</span><span class="k">ref</span> <span class="n">records</span><span class="p">);</span>
+<span class="p">});</span>
+
 </pre></div>
 
 <hr><h2>The good stuff</h2>
@@ -118,19 +129,14 @@
 
 <p>The first method a foreach with a transform Func type (Func) this function is called for every record in parallel and the return is an IEnumerable.</p>
 
-<p>The second method is the Load extension method that forces the reader to fetch the data to memory and then returns the current reader so the GetTuples method can be called. Remember that this method does not run any action in parallel it just reads as quick as possible the data from the reader and turns that into tuples releasing the reader.</p>
-
 <div class="highlight"><pre><span class="c1">// Mapping / transform operation</span>
-<span class="kt">var</span> <span class="n">orders</span> <span class="p">=</span> <span class="n">GetReader</span><span class="p">().</span><span class="n">AsParallel</span><span class="p">().</span><span class="n">ForEach</span><span class="p">&lt;</span><span class="n">Order</span><span class="p">&gt;(</span><span class="n">t</span> <span class="p">=&gt;</span>
+<span class="kt">var</span> <span class="n">orders</span> <span class="p">=</span> <span class="n">GetReader</span><span class="p">().</span><span class="n">ParallelTransform</span><span class="p">&lt;</span><span class="n">Order</span><span class="p">&gt;(</span><span class="n">t</span> <span class="p">=&gt;</span>
 <span class="p">{</span>
     <span class="k">return</span> <span class="k">new</span> <span class="n">Order</span>
     <span class="p">{</span>
         <span class="n">OrderId</span> <span class="p">=</span> <span class="n">t</span><span class="p">.</span><span class="n">GetValue</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;(</span><span class="s">"orderId"</span><span class="p">)</span>
     <span class="p">};</span>
 <span class="p">});</span>
-
-<span class="c1">// Get ordered tuples</span>
-<span class="n">GetReader</span><span class="p">().</span><span class="n">AsParallel</span><span class="p">().</span><span class="n">Load</span><span class="p">().</span><span class="n">GetTuples</span><span class="p">();</span>
 </pre></div>
       </section>
       <footer>
