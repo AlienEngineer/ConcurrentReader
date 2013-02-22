@@ -22,7 +22,7 @@ namespace ConcurrentReader.Tests
 
         public IDataReader GetConcurrentReader()
         {
-            return GetReader().MakeConcurrent();
+            return GetReader().AsParallel();
         }
 
         public double SimulateWork()
@@ -94,7 +94,7 @@ namespace ConcurrentReader.Tests
         [Test]
         public void Concurrent_Loading_Test_With_Predicate()
         {
-            var reader = GetReader().MakeConcurrent(r => r.GetInt32(0) < 10500);
+            var reader = GetReader().AsParallel(r => r.GetInt32(0) < 10500);
             int[] records = {0};
 
             reader.ForEach(r =>
@@ -109,7 +109,7 @@ namespace ConcurrentReader.Tests
         [Test]
         public void Concurrent_Loading_Test()
         {
-            var reader = GetReader().MakeConcurrent();
+            var reader = GetReader().AsParallel();
             int[] records = {0};
 
             reader.ForEach(r =>
@@ -140,7 +140,7 @@ namespace ConcurrentReader.Tests
         [Test]
         public void Process_Loaded_Data()
         {
-            var reader = GetReader().MakeConcurrent();
+            var reader = GetReader().AsParallel();
             
             var values = new ConcurrentStack<IDictionary<String, Object>>();
 
@@ -172,7 +172,7 @@ namespace ConcurrentReader.Tests
         public void Ordered_Loaded_Data()
         {
 
-            var orders = GetReader().MakeConcurrent().ForEach<Order>(t =>
+            var orders = GetReader().AsParallel().Transform<Order>(t =>
                         {
                             return new Order
                             {
@@ -196,7 +196,7 @@ namespace ConcurrentReader.Tests
         [Test]
         public void Ordered_Loaded_Data_AsTuples()
         {
-            var tuples = GetReader().MakeConcurrent().Load().GetTuples();
+            var tuples = GetReader().AsParallel().Load().GetTuples();
             Assert.AreEqual(RECORD_COUNT, tuples.Count());
 
             int last = 0;

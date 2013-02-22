@@ -17,10 +17,36 @@ namespace ConcurrentReader
         /// <param name="reader">The reader.</param>
         /// <param name="readWhile">The read while.</param>
         /// <returns></returns>
-        public static IConcurrentDataReader MakeConcurrent(this IDataReader reader, Predicate<IDataReader> readWhile = null)
+        public static IConcurrentDataReader AsParallel(this IDataReader reader, Predicate<IDataReader> readWhile = null)
         {
             return new ConcurrentDBReader(reader, readWhile);
         }
+
+        #region IDATAREADER EXTENSIONS
+
+        public static IEnumerable<ITuple> ParallelForEach(this IDataReader reader, Action<IConcurrentDataReader> action, int maxThreads)
+        {
+            return reader.AsParallel().ForEach(action, maxThreads);
+        }
+
+        public static IEnumerable<ITuple> ParallelForEach(this IDataReader reader, Action<IConcurrentDataReader> action)
+        {
+            return reader.AsParallel().ForEach(action);
+        }
+
+        public static IEnumerable<TModel> ParallelTransform<TModel>(this IConcurrentDataReader reader, Func<ITuple, TModel> transform, int maxThreads) where TModel : class, new()
+        {
+            return reader.AsParallel().Transform<TModel>(transform, maxThreads);
+        }
+
+        public static IEnumerable<TModel> ParallelTransform<TModel>(this IConcurrentDataReader reader, Func<ITuple, TModel> transform) where TModel : class, new()
+        {
+            return reader.AsParallel().Transform<TModel>(transform);
+        } 
+
+        #endregion
+
+        #region CONCURRENT EXTENSIONS
 
         /// <summary>
         /// Iterates the reader and calls the action for every record.
@@ -69,7 +95,7 @@ namespace ConcurrentReader
         /// <param name="transform">The transform.</param>
         /// <param name="maxThreads">The max threads.</param>
         /// <returns><code>IEnumerable<TModel></code> With the same order as the records were read.</returns>
-        public static IEnumerable<TModel> ForEach<TModel>(this IConcurrentDataReader reader, Func<ITuple, TModel> transform,int maxThreads) where TModel : class, new()
+        public static IEnumerable<TModel> Transform<TModel>(this IConcurrentDataReader reader, Func<ITuple, TModel> transform, int maxThreads) where TModel : class, new()
         {
             ConcurrentDictionary<ITuple, TModel> models = new ConcurrentDictionary<ITuple, TModel>();
             reader.ForEach(r =>
@@ -88,9 +114,9 @@ namespace ConcurrentReader
         /// <param name="reader">The reader.</param>
         /// <param name="transform">The transform.</param>
         /// <returns><code>IEnumerable<TModel></code> With the same order as the records were read.</returns>
-        public static IEnumerable<TModel> ForEach<TModel>(this IConcurrentDataReader reader, Func<ITuple, TModel> transform) where TModel : class, new()
+        public static IEnumerable<TModel> Transform<TModel>(this IConcurrentDataReader reader, Func<ITuple, TModel> transform) where TModel : class, new()
         {
-            return reader.ForEach(transform, Environment.ProcessorCount);
+            return reader.Transform(transform, Environment.ProcessorCount);
         }
 
         /// <summary>
@@ -100,8 +126,9 @@ namespace ConcurrentReader
         /// <returns></returns>
         public static IConcurrentDataReader Load(this IConcurrentDataReader reader)
         {
-            reader.ForEach(r => {});
+            reader.ForEach(r => { });
             return reader;
-        }
+        } 
+        #endregion
     }
 }
