@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Threading;
 using System.Collections.Concurrent;
+using System.Linq;
 
 namespace ConcurrentReader.Tests
 {
@@ -16,7 +17,7 @@ namespace ConcurrentReader.Tests
 
         public IDataReader GetReader()
         {
-            return connection.ExecuteReader("Select * From Orders");
+            return connection.ExecuteReader("Select * From Orders order by OrderId");
         }
 
         public IDataReader GetConcurrentReader()
@@ -165,6 +166,46 @@ namespace ConcurrentReader.Tests
         public void Timed_Process_Loaded_Data()
         {
             Benchmark.Run(Process_Loaded_Data, RUSH_COUNT);
+        }
+
+        [Test]
+        public void Ordered_Loaded_Data()
+        {
+
+            var orders = GetReader().MakeConcurrent().ForEach<Order>(t =>
+                        {
+                            return new Order
+                            {
+                                OrderId = t.GetValue<int>("orderId")
+                            };
+                        });
+
+            Assert.AreEqual(RECORD_COUNT, orders.Count());
+
+
+            int last = 0;
+
+            foreach (var order in orders)
+            {
+                Assert.Less(last, order.OrderId);
+                last = order.OrderId;
+            }
+
+        }
+
+        [Test]
+        public void Ordered_Loaded_Data_AsTuples()
+        {
+            var tuples = GetReader().MakeConcurrent().Load().GetTuples();
+            Assert.AreEqual(RECORD_COUNT, tuples.Count());
+
+            int last = 0;
+
+            foreach (var tuple in tuples)
+            {
+                Assert.Less(last, tuple.GetValue<int>("orderId"));
+                last = tuple.GetValue<int>("orderId");
+            }
         }
 
         #endregion

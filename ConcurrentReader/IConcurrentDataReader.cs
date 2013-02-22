@@ -9,5 +9,8 @@ namespace ConcurrentReader
     public interface IConcurrentDataReader : IDataReader
     {
         ITuple GetData();
+        IEnumerable<ITuple> GetTuples();
     }
+
+
 }

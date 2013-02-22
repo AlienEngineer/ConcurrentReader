@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -22,12 +23,13 @@ namespace ConcurrentReader
         }
 
         /// <summary>
-        /// Iterates the reader and calls the action for every record. 
+        /// Iterates the reader and calls the action for every record.
         /// </summary>
         /// <param name="reader">The reader.</param>
         /// <param name="action">The action.</param>
         /// <param name="maxThreads">The max threads.</param>
-        public static void ForEach(this IConcurrentDataReader reader, Action<IDataReader> action, int maxThreads)
+        /// <returns></returns>
+        public static IEnumerable<ITuple> ForEach(this IConcurrentDataReader reader, Action<IConcurrentDataReader> action, int maxThreads)
         {
             var ts = new HashSet<Task>();
 
@@ -45,17 +47,61 @@ namespace ConcurrentReader
             reader.Close();
 
             Task.WaitAll(ts.ToArray());
-        }
 
+            return reader.GetTuples();
+        }
 
         /// <summary>
         /// Iterates the reader and calls the action for every record. 
         /// </summary>
         /// <param name="reader">The reader.</param>
         /// <param name="action">The action.</param>
-        public static void ForEach(this IConcurrentDataReader reader, Action<IDataReader> action)
+        public static IEnumerable<ITuple> ForEach(this IConcurrentDataReader reader, Action<IConcurrentDataReader> action)
         {
-            reader.ForEach(action, Environment.ProcessorCount);
+            return reader.ForEach(action, Environment.ProcessorCount);
+        }
+
+        /// <summary>
+        /// Iterates the reader and transforms the ITuple instance into TModel type.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model.</typeparam>
+        /// <param name="reader">The reader.</param>
+        /// <param name="transform">The transform.</param>
+        /// <param name="maxThreads">The max threads.</param>
+        /// <returns><code>IEnumerable<TModel></code> With the same order as the records were read.</returns>
+        public static IEnumerable<TModel> ForEach<TModel>(this IConcurrentDataReader reader, Func<ITuple, TModel> transform,int maxThreads) where TModel : class, new()
+        {
+            ConcurrentDictionary<ITuple, TModel> models = new ConcurrentDictionary<ITuple, TModel>();
+            reader.ForEach(r =>
+            {
+                var data = r.GetData();
+                models[data] = transform(data);
+            }, maxThreads);
+
+            return reader.GetTuples().Select(t => models[t]);
+        }
+
+        /// <summary>
+        /// Iterates the reader and transforms the ITuple instance into TModel type.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model.</typeparam>
+        /// <param name="reader">The reader.</param>
+        /// <param name="transform">The transform.</param>
+        /// <returns><code>IEnumerable<TModel></code> With the same order as the records were read.</returns>
+        public static IEnumerable<TModel> ForEach<TModel>(this IConcurrentDataReader reader, Func<ITuple, TModel> transform) where TModel : class, new()
+        {
+            return reader.ForEach(transform, Environment.ProcessorCount);
+        }
+
+        /// <summary>
+        /// Cache the readers data.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <returns></returns>
+        public static IConcurrentDataReader Load(this IConcurrentDataReader reader)
+        {
+            reader.ForEach(r => {});
+            return reader;
         }
     }
 }

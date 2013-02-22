@@ -6,7 +6,6 @@ using System.Threading;
 
 namespace ConcurrentReader
 {
-
     public class ConcurrentDBReader : ConcurrentDataReaderBase
     {
         private readonly List<ITuple> data = new List<ITuple>();
@@ -15,7 +14,7 @@ namespace ConcurrentReader
 
         private int current;
         private int running;
-
+        
         private readonly ConcurrentDictionary<Thread, ITuple> threadAllocatedData = new ConcurrentDictionary<Thread, ITuple>();
 
         public ConcurrentDBReader(IDataReader reader, Predicate<IDataReader> readWhile = null)
@@ -81,7 +80,7 @@ namespace ConcurrentReader
 
             _Reader.Close();
             _Reader.Dispose();
-        }        
+        }
 
         public override bool Read()
         {
@@ -119,5 +118,9 @@ namespace ConcurrentReader
             return true;
         }
 
+        public override IEnumerable<ITuple> GetTuples()
+        {
+            return data;
+        }
     }
 }

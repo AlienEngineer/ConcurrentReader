@@ -179,5 +179,8 @@ namespace ConcurrentReader
                 return GetData().GetValue(i);
             }
         }
+
+
+        public abstract IEnumerable<ITuple> GetTuples();
     }
 }

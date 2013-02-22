@@ -59,6 +59,7 @@
     <Compile Include="Benchmark.cs" />
     <Compile Include="Connection.cs" />
     <Compile Include="Loading_Tests.cs" />
+    <Compile Include="Order.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
