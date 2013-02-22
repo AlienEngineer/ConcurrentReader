@@ -14,8 +14,9 @@ namespace ConcurrentReader
         /// Makes this reader into a Thread Safe reader.
         /// </summary>
         /// <param name="reader">The reader.</param>
+        /// <param name="readWhile">The read while.</param>
         /// <returns></returns>
-        public static ConcurrentDBReader MakeConcurrent(this IDataReader reader, Predicate<IDataReader> readWhile = null)
+        public static IConcurrentDataReader MakeConcurrent(this IDataReader reader, Predicate<IDataReader> readWhile = null)
         {
             return new ConcurrentDBReader(reader, readWhile);
         }
@@ -26,7 +27,7 @@ namespace ConcurrentReader
         /// <param name="reader">The reader.</param>
         /// <param name="action">The action.</param>
         /// <param name="maxThreads">The max threads.</param>
-        public static void ForEach(this ConcurrentDBReader reader, Action<IDataReader> action, int maxThreads)
+        public static void ForEach(this IConcurrentDataReader reader, Action<IDataReader> action, int maxThreads)
         {
             var ts = new HashSet<Task>();
 
@@ -52,7 +53,7 @@ namespace ConcurrentReader
         /// </summary>
         /// <param name="reader">The reader.</param>
         /// <param name="action">The action.</param>
-        public static void ForEach(this ConcurrentDBReader reader, Action<IDataReader> action)
+        public static void ForEach(this IConcurrentDataReader reader, Action<IDataReader> action)
         {
             reader.ForEach(action, Environment.ProcessorCount);
         }

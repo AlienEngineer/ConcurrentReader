@@ -21,7 +21,7 @@ namespace ConcurrentReader.Tests
 
         public IDataReader GetConcurrentReader()
         {
-            return new ConcurrentDBReader(GetReader());
+            return GetReader().MakeConcurrent();
         }
 
         public double SimulateWork()
