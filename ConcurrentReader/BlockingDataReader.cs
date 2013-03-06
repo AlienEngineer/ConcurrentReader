@@ -23,9 +23,7 @@ namespace ConcurrentReader
         // Second stage buffer.
         private readonly BlockingCollection<ITuple> _TransformedRows = new BlockingCollection<ITuple>();
         // Final result
-        private readonly ICollection<ITuple> _FinalStage = new List<ITuple>();
-
-        private int currentIndex;
+        private readonly ICollection<ITuple> _Data = new List<ITuple>();
 
         public BlockingDataReader(IDataReader reader, Predicate<IDataReader> readWhile = null)
         {
@@ -43,7 +41,7 @@ namespace ConcurrentReader
             {
                 var tuple = row.ToTuple(this);
                 _TransformedRows.Add(tuple);
-                _FinalStage.Add(tuple);
+                _Data.Add(tuple);
             }
             _TransformedRows.CompleteAdding();
         }
@@ -110,7 +108,7 @@ namespace ConcurrentReader
 
         public override IEnumerable<ITuple> GetTuples()
         {
-            return _FinalStage;
+            return _Data;
         }
     }
 }
