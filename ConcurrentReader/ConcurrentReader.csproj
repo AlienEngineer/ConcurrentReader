@@ -42,6 +42,7 @@
     <Compile Include="BlockingDataReader.cs" />
     <Compile Include="ConcurrentDataReaderBase.cs" />
     <Compile Include="ConcurrentDataReader.cs" />
+    <Compile Include="DataRow.cs" />
     <Compile Include="IConcurrentDataReader.cs" />
     <Compile Include="ReaderExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
