@@ -11,6 +11,25 @@ namespace ConcurrentReader
     public static class ReaderExtensions
     {
 
+        public static String[] GetColumnNames(this IDataReader reader)
+        {
+            var result = new String[reader.FieldCount];
+
+            for (int i = 0; i < result.Length; i++)
+            {
+                result[i] = reader.GetName(i).ToLower();
+            }
+
+            return result;
+        }
+
+        public static Object[] GetValues(this IDataReader reader)
+        {
+            var values = new Object[reader.FieldCount];
+            reader.GetValues(values);
+            return values;
+        }
+
         /// <summary>
         /// Makes this reader into a Thread Safe reader.
         /// </summary>
@@ -19,7 +38,7 @@ namespace ConcurrentReader
         /// <returns></returns>
         public static IConcurrentDataReader AsParallel(this IDataReader reader, Predicate<IDataReader> readWhile = null)
         {
-            return new ConcurrentDataReader(reader, readWhile);
+            return new BlockingDataReader(reader, readWhile);
         }
 
         #region IDATAREADER EXTENSIONS

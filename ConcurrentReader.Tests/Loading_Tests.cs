@@ -35,7 +35,7 @@ namespace ConcurrentReader.Tests
             }
             return result;
         }
-        
+
         #region Simple Testing Area
 
         [Test]
@@ -43,7 +43,7 @@ namespace ConcurrentReader.Tests
         {
             var count = 0;
             var reader = GetReader();
-            
+
             while (reader.Read())
             {
                 SimulateWork();
@@ -72,6 +72,7 @@ namespace ConcurrentReader.Tests
 
             while (reader.Read())
             {
+                reader.GetInt32(0 /* coluna */);
                 SimulateWork();
                 ++count;
             }
@@ -95,7 +96,7 @@ namespace ConcurrentReader.Tests
         public void Concurrent_Loading_Test_With_Predicate()
         {
             var reader = GetReader().AsParallel(r => r.GetInt32(0) < 10500);
-            int[] records = {0};
+            int[] records = { 0 };
 
             reader.ForEach(r =>
             {
@@ -110,7 +111,7 @@ namespace ConcurrentReader.Tests
         public void Concurrent_Loading_Test()
         {
             var reader = GetReader().AsParallel();
-            int[] records = {0};
+            int[] records = { 0 };
 
             reader.ForEach(r =>
             {
@@ -132,7 +133,7 @@ namespace ConcurrentReader.Tests
         {
             Benchmark.Run(Concurrent_Loading_Test, RUSH_COUNT);
         }
-        
+
         #endregion
 
         #region
@@ -141,7 +142,7 @@ namespace ConcurrentReader.Tests
         public void Process_Loaded_Data()
         {
             var reader = GetReader().AsParallel();
-            
+
             var values = new ConcurrentStack<IDictionary<String, Object>>();
 
             var columns = new[] { "OrderId", "CustomerId", "EmployeeID" };
@@ -155,7 +156,7 @@ namespace ConcurrentReader.Tests
                     row[column] = r[column];
                 }
 
-                values.Push(row);                
+                values.Push(row);
             });
 
             Assert.AreEqual(RECORD_COUNT, values.Count);
@@ -172,13 +173,14 @@ namespace ConcurrentReader.Tests
         public void Ordered_Loaded_Data()
         {
 
-            var orders = GetReader().AsParallel().Transform<Order>(t =>
-                        {
-                            return new Order
-                            {
-                                OrderId = t.GetValue<int>("orderId")
-                            };
-                        });
+            var orders = GetReader().AsParallel()
+                .Transform<Order>(t =>
+                {
+                    return new Order
+                    {
+                        OrderId = t.GetValue<int>("orderId")
+                    };
+                });
 
             Assert.AreEqual(RECORD_COUNT, orders.Count());
 
